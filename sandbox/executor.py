@@ -1,7 +1,9 @@
-import io
-import contextlib
+import os
 
-def try_execute(code_string: str):
+code_string = os.environ.get("CODE_TO_RUN", "")
+
+# same safe logic from above:
+def try_execute(code_string):
     safe_builtins = {
         "__import__": __import__,
         "print": print,
@@ -23,16 +25,11 @@ def try_execute(code_string: str):
         "sum": sum,
     }
 
-    restricted_globals = {
-        "__builtins__": safe_builtins,
-    }
-
-    output_buffer = io.StringIO()
-    error_buffer = io.StringIO()
+    restricted_globals = {"__builtins__": safe_builtins}
 
     try:
-        with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(error_buffer):
-            exec(code_string, restricted_globals)
-        return output_buffer.getvalue(), None
+        exec(code_string, restricted_globals)
     except Exception as e:
-        return output_buffer.getvalue(), str(e)
+        print(f"❌ EXECUTION ERROR:\n\n{e}")
+
+try_execute(code_string)
